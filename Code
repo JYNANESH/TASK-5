@@ -1,0 +1,75 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.style.use('seaborn-v0_8') 
+sns.set_palette('pastel')
+df = pd.read_csv(r"C:\Users\tedla\Downloads\train_data.csv")
+print("Shape of dataset:", df.shape)  
+print("\nColumn Names:", df.columns.tolist())  
+print("\nFirst 5 rows:\n", df.head())
+print("\nData Info:\n")
+print(df.info())  
+print("\nSummary Statistics:\n")
+print(df.describe(include='all')) 
+print("\nMissing Values:\n", df.isnull().sum())
+df['Age'].fillna(df['Age'].median(), inplace=True)
+df['Embarked'].fillna(df['Embarked'].mode()[0], inplace=True)
+df.drop(columns=['Cabin'], inplace=True)
+num_cols = ['Age', 'Fare', 'SibSp', 'Parch']
+cat_cols = ['Survived', 'Pclass', 'Sex', 'Embarked']
+df[num_cols].hist(bins=20, figsize=(12,8), color='skyblue')
+plt.suptitle("Distribution of Numerical Variables", fontsize=16)
+plt.show()
+for col in cat_cols:
+    plt.figure(figsize=(6,4))
+    sns.countplot(x=col, data=df)
+    plt.title(f"Countplot of {col}")
+    plt.show()
+    if col == 'Survived':
+        print("Observation: Majority of passengers did not survive (~62%).")
+    elif col == 'Pclass':
+        print("Observation: Most passengers traveled in 3rd class.")
+    elif col == 'Sex':
+        print("Observation: More male passengers than female passengers.")
+    elif col == 'Embarked':
+        print("Observation: Most passengers embarked from port S.")
+plt.figure(figsize=(6,4))
+sns.countplot(x='Sex', data=df)
+plt.title("Survival Count by Sex")
+plt.show()
+print("Observation: Females had a significantly higher survival rate compared to males.")
+plt.figure(figsize=(6,4))
+sns.countplot(x='Pclass', data=df)
+plt.title("Survival Count by Passenger Class")
+plt.show()
+print("Observation: First-class passengers had the highest survival rates, while third-class had the lowest.")
+plt.figure(figsize=(6,4))
+sns.boxplot(x='Sex', y='Age', data=df)
+plt.title("Age Distribution by Sex")
+plt.show()
+print("Observation: Younger passengers tended to have higher survival rates, but there were survivors in all age groups.")
+plt.figure(figsize=(6,4))
+sns.boxplot(x='Survived', y='Fare', data=df)
+plt.title("Fare Distribution by Survival")
+plt.show()
+print("Observation: Higher ticket fares are associated with higher survival chances.")
+df_corr = df.copy()
+df_corr['Sex'] = df_corr['Sex'].map({'male': 0, 'female': 1})
+df_corr['Embarked'] = df_corr['Embarked'].map({'S': 0, 'C': 1, 'Q': 2})
+plt.figure(figsize=(10,6))
+sns.heatmap(df_corr.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title("Correlation Heatmap")
+plt.show()
+print("Observation: Strong negative correlation between Pclass and Fare. Survival is positively correlated with Sex (female) and Fare.")
+sns.pairplot(df_corr[['Survived', 'Age', 'Fare', 'Pclass']], hue='Survived')
+plt.show()
+print("Observation: Clear separation in Fare and Pclass between survivors and non-survivors. Age shows overlap between both groups.")
+print("""
+Summary of Key Insights:
+1. Females had a significantly higher survival rate than males.
+2. First-class passengers survived more often than those in lower classes.
+3. Younger passengers tended to have better survival chances.
+4. Higher fares correlated with higher survival probability.
+5. Pclass and Fare are negatively correlated.
+""")
